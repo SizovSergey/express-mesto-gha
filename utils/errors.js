@@ -8,9 +8,6 @@ const handleErrors = (error, res) => {
   if (error instanceof mongoose.Error.CastError) {
     return res.status(ERROR_BAD_REQUEST).send({ message: 'переданы некорректные данные в методы создания карточки, пользователя, обновления аватара пользователя или профиля' });
   }
-  if (error instanceof mongoose.Error.SyntaxError) {
-    return res.status(ERROR_BAD_REQUEST).send({ message: 'Запрос передан с синтаксическими ошибками' });
-  }
   if (error instanceof mongoose.Error.ValidationError) {
     return res.status(ERROR_BAD_REQUEST).send({ message: 'Ошибка валидации данных.' });
   }
