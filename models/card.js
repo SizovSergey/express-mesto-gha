@@ -24,7 +24,7 @@ const cardSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+}, { versionKey: false });
 
 const Card = mongoose.model('card', cardSchema);
 

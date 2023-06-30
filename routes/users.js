@@ -2,7 +2,6 @@ const express = require('express');
 
 const router = express.Router();
 
-// eslint-disable-next-line import/no-unresolved
 const {
   createUser, getUsers, getUser, updateUser, updateAvatar,
 } = require('../controllers/users');

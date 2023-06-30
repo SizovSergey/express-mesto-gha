@@ -1,4 +1,5 @@
 const Card = require('../models/card');
+const { ERROR_NOT_FOUND, handleErrors } = require('../utils/errors');
 
 module.exports.createCard = (req, res) => {
   const {
@@ -12,41 +13,33 @@ module.exports.createCard = (req, res) => {
       res.send(card);
     })
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        res.status(400).send({ message: 'Ошибка валидации.Вы не ввели имя карточки или ссылку на картинку' });
-        return;
-      }
-      res.status(500).send({ message: 'Сервер упал.Возможно скоро он заработает' });
+      handleErrors(error, res);
     });
 };
 
 module.exports.getCards = (req, res) => {
-  Card.find({}).select('-__v')
+  Card.find({})
     .then((cards) => {
       res.send(cards);
     })
     .catch((error) => {
-      if (error.name === 'NotFoundError') {
-        res.status(404).send({ message: 'Не найдена карточка с таким ID' });
-        return;
-      }
-      res.status(500).send({ message: 'Сервер упал.Возможно скоро он заработает' });
+      handleErrors(error, res);
     });
 };
 
 module.exports.deleteCard = (req, res) => {
   const { id } = req.params;
 
-  Card.findByIdAndRemove(id).select('-__v')
+  Card.findByIdAndRemove(id)
     .then((card) => {
+      if (!card) {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с таким id не найдена' });
+        return;
+      }
       res.send(card);
     })
     .catch((error) => {
-      if (error.name === 'NotFoundError') {
-        res.status(404).send({ message: 'Не найдена карточка с таким ID' });
-        return;
-      }
-      res.status(500).send({ message: 'Сервер упал.Возможно скоро он заработает' });
+      handleErrors(error, res);
     });
 };
 
@@ -56,12 +49,16 @@ module.exports.likeCard = (req, res) => {
     id,
     { $addToSet: { likes: req.user._id } },
     { new: true },
-  ).select('-__v')
+  )
     .then((card) => {
+      if (!card) {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с таким id не найдена' });
+        return;
+      }
       res.send(card);
     })
     .catch((error) => {
-      res.status(400).send(error);
+      handleErrors(error, res);
     });
 };
 
@@ -71,11 +68,15 @@ module.exports.dislikeCard = (req, res) => {
     id,
     { $pull: { likes: req.user._id } },
     { new: true },
-  ).select('-__v')
+  )
     .then((card) => {
+      if (!card) {
+        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с таким id не найдена' });
+        return;
+      }
       res.send(card);
     })
     .catch((error) => {
-      res.status(400).send(error);
+      handleErrors(error, res);
     });
 };
