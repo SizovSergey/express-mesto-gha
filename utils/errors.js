@@ -12,7 +12,7 @@ const handleErrors = (error, res) => {
     return res.status(ERROR_BAD_REQUEST).send({ message: 'Ошибка валидации данных.' });
   }
   if (error instanceof mongoose.Error.DocumentNotFoundError) {
-    return res.status(ERROR_NOT_FOUND).send({ message: 'карточка или пользователь не найден или был запрошен несуществующий роут' });
+    return res.status(ERROR_NOT_FOUND).send({ message: 'карточка или пользователь не найден' });
   }
   return res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
 };

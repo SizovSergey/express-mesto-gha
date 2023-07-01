@@ -9,7 +9,6 @@ https://github.com/SizovSergey/express-mesto-gha.git
 Mongodb
 node
 express
-Mongoose
 
 ## Директории
 

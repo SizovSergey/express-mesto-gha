@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const Card = require('../models/card');
-const { ERROR_NOT_FOUND, handleErrors } = require('../utils/errors');
+
+const { handleErrors } = require('../utils/errors');
 
 module.exports.createCard = (req, res) => {
   const {
@@ -31,11 +33,8 @@ module.exports.deleteCard = (req, res) => {
   const { id } = req.params;
 
   Card.findByIdAndRemove(id)
+    .orFail(new mongoose.Error.DocumentNotFoundError())
     .then((card) => {
-      if (!card) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с таким id не найдена' });
-        return;
-      }
       res.send(card);
     })
     .catch((error) => {
@@ -49,12 +48,8 @@ module.exports.likeCard = (req, res) => {
     id,
     { $addToSet: { likes: req.user._id } },
     { new: true },
-  )
+  ).orFail(new mongoose.Error.DocumentNotFoundError())
     .then((card) => {
-      if (!card) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с таким id не найдена' });
-        return;
-      }
       res.send(card);
     })
     .catch((error) => {
@@ -68,12 +63,8 @@ module.exports.dislikeCard = (req, res) => {
     id,
     { $pull: { likes: req.user._id } },
     { new: true },
-  )
+  ).orFail(new mongoose.Error.DocumentNotFoundError())
     .then((card) => {
-      if (!card) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Карточка с таким id не найдена' });
-        return;
-      }
       res.send(card);
     })
     .catch((error) => {

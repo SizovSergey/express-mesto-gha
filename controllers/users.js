@@ -1,5 +1,6 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
-const { ERROR_NOT_FOUND, handleErrors } = require('../utils/errors');
+const { handleErrors } = require('../utils/errors');
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
@@ -26,11 +27,8 @@ module.exports.getUser = (req, res) => {
   const { id } = req.params;
 
   User.findById(id)
+    .orFail(new mongoose.Error.DocumentNotFoundError())
     .then((user) => {
-      if (!user) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь c таким _id не найден' });
-        return;
-      }
       res.send(user);
     })
     .catch((error) => {
@@ -41,6 +39,7 @@ module.exports.getUser = (req, res) => {
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+    .orFail(new mongoose.Error.DocumentNotFoundError())
     .then((user) => {
       res.send(user);
     })
@@ -52,6 +51,7 @@ module.exports.updateUser = (req, res) => {
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+    .orFail(new mongoose.Error.DocumentNotFoundError())
     .then((user) => {
       res.send(user);
     })
