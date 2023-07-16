@@ -10,7 +10,14 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  bcrypt.hash(password, 10)
+
+  User.findOne({ email }).then((user) => {
+    if (user) {
+      next(new ConflictError(`Пользователь с ${email} уже существует.`));
+    }
+  });
+
+  return bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
       about,
@@ -19,23 +26,20 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      res.status(200).send(user.name, user.about, user.avatar, user.email);
+      res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.code === 11000) {
-        next(new ConflictError({ message: 'Пользователь с таким email уже есть' }));
-      } else if (err instanceof BadRequestError) {
-        next(err);
-      } else {
-        next(err);
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Данные заполнены неверно'));
       }
+      next(err);
     });
 };
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      res.send(users);
+      res.status(200).send(users);
     })
     .catch((err) => next(err));
 };
@@ -48,7 +52,7 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError({ message: 'Нет пользователя с таким id' });
       }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => next(err));
 };
@@ -61,7 +65,7 @@ module.exports.getUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError({ message: 'Нет пользователя с таким id' });
       }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => next(err));
 };
@@ -73,7 +77,7 @@ module.exports.updateUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError({ message: 'Нет пользователя с таким id' });
       }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -88,7 +92,7 @@ module.exports.updateAvatar = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(new NotFoundError({ message: 'Нет пользователя с таким id' }))
     .then((user) => {
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
