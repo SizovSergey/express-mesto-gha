@@ -6,13 +6,9 @@ const app = express();
 
 const mongoose = require('mongoose');
 
-const errorsHandler = require('./middlewares/errorsHandler');
-
-const { userValidate, loginValidate } = require('./middlewares/validate');
-
-const { login, createUser } = require('./controllers/users');
-
 const routes = require('./routes/index');
+
+const errorsHandler = require('./middlewares/errorsHandler');
 
 const { ERROR_NOT_FOUND } = require('./utils/errors');
 
@@ -24,9 +20,6 @@ mongoose.connect('mongodb://127.0.0.1/mestodb', {
 });
 
 app.use(express.json());
-
-app.post('/signin', loginValidate, login);
-app.post('/signup', userValidate, createUser);
 
 app.use(routes);
 

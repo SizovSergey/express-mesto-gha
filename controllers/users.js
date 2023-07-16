@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
-const getJwtToken = require('../helpers/jwt');
+const JWT_SECRET = require('../helpers/jwt');
 const BadRequestError = require('../errors/badRequestError');
 const NotFoundError = require('../errors/notFoundError');
 const ConflictError = require('../errors/conflictError');
@@ -10,7 +10,6 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
@@ -20,16 +19,13 @@ module.exports.createUser = (req, res, next) => {
       password: hash,
     }))
     .then((user) => {
-      res.status(200).send({
-        name,
-        about,
-        avatar,
-        email,
-      });
+      res.status(200).send(user.name, user.about, user.avatar, user.email);
     })
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError({ message: 'Пользователь с таким email уже есть' }));
+      } else if (err instanceof BadRequestError) {
+        next(err);
       } else {
         next(err);
       }
@@ -39,7 +35,7 @@ module.exports.createUser = (req, res, next) => {
 module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      res.send({ data: users });
+      res.send(users);
     })
     .catch((err) => next(err));
 };
@@ -104,12 +100,13 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
+  const userId = req.user._id;
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user || !password) {
         next(new BadRequestError('Неверный email или пароль.'));
       }
-      const token = getJwtToken(user._id);
+      const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
       res
         .cookie('token', token, {
           httpOnly: true,
