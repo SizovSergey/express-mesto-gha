@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+const urlRegex = /^(https?:\/\/)(www\.)?([a-z0-9._]+)\.([a-z]{2,6}\.?)(\/[\w.]*)*\/?#?$/i;
+
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -10,6 +12,10 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (value) => urlRegex.test(value),
+      message: 'Неправильный url адресс',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

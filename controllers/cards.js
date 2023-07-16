@@ -1,73 +1,74 @@
-const mongoose = require('mongoose');
 const Card = require('../models/card');
+const BadRequestError = require('../errors/badRequestError');
+const NotFoundError = require('../errors/notFoundError');
+const ForbiddenError = require('../errors/forbiddenError');
 
-const { handleErrors } = require('../utils/errors');
-
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const {
     name, link,
   } = req.body;
-
+  if (!name || !link) {
+    throw (new BadRequestError('Заполните обязательные поля(имя карточки и ссылку на картинку)'));
+  }
   Card.create({
     name, link, owner: req.user._id,
   })
     .then((card) => {
       res.send(card);
     })
-    .catch((error) => {
-      handleErrors(error, res);
-    });
+    .catch((err) => next(err));
 };
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
       res.send(cards);
     })
-    .catch((error) => {
-      handleErrors(error, res);
-    });
+    .catch((err) => next(err));
 };
 
-module.exports.deleteCard = (req, res) => {
-  const { id } = req.params;
-
-  Card.findByIdAndRemove(id)
-    .orFail(new mongoose.Error.DocumentNotFoundError())
+module.exports.deleteCard = (req, res, next) => {
+  const id = req.params._id;
+  const userId = req.user._id;
+  Card.findById(id)
+    .orFail(new NotFoundError('Карточка с таким id не найдена'))
     .then((card) => {
+      if (card.owner.toString() !== userId.toString) {
+        throw (new ForbiddenError('Нельзя удалять карточки с местами других пользователей'));
+      }
       res.send(card);
     })
-    .catch((error) => {
-      handleErrors(error, res);
-    });
+    .catch((err) => next(err));
 };
 
-module.exports.likeCard = (req, res) => {
-  const { id } = req.params;
+module.exports.likeCard = (req, res, next) => {
+  const id = req.params._id;
   Card.findByIdAndUpdate(
     id,
     { $addToSet: { likes: req.user._id } },
     { new: true },
-  ).orFail(new mongoose.Error.DocumentNotFoundError())
+  )
     .then((card) => {
+      if (!card) {
+        throw (new NotFoundError('Карточка с таким id не найдена'));
+      }
       res.send(card);
     })
-    .catch((error) => {
-      handleErrors(error, res);
-    });
+    .catch((err) => next(err));
 };
 
-module.exports.dislikeCard = (req, res) => {
-  const { id } = req.params;
+module.exports.dislikeCard = (req, res, next) => {
+  const id = req.params._id;
   Card.findByIdAndUpdate(
     id,
     { $pull: { likes: req.user._id } },
     { new: true },
-  ).orFail(new mongoose.Error.DocumentNotFoundError())
+  )
     .then((card) => {
+      if (!card) {
+        throw (new NotFoundError('Карточка с таким id не найдена'));
+      }
       res.send(card);
     })
-    .catch((error) => {
-      handleErrors(error, res);
-    });
+    .catch((err) => next(err));
 };

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const ERROR_BAD_REQUEST = 400;
 const ERROR_NOT_FOUND = 404;
 const ERROR_INTERNAL_SERVER = 500;
+const FORBIDEN_ERROR = 403;
 
 const handleErrors = (error, res) => {
   if (error instanceof mongoose.Error.CastError) {
@@ -13,6 +14,12 @@ const handleErrors = (error, res) => {
   }
   if (error instanceof mongoose.Error.DocumentNotFoundError) {
     return res.status(ERROR_NOT_FOUND).send({ message: 'карточка или пользователь не найден' });
+  }
+  if (error instanceof mongoose.Error.DocumentNotFoundError) {
+    return res.status(ERROR_NOT_FOUND).send({ message: 'карточка или пользователь не найден' });
+  }
+  if (error instanceof mongoose.Error.ForbiddenError) {
+    return res.status(FORBIDEN_ERROR).send({ message: 'недостаточно прав' });
   }
   return res.status(ERROR_INTERNAL_SERVER).send({ message: 'На сервере произошла ошибка' });
 };

@@ -1,13 +1,22 @@
+require('dotenv').config();
+
 const express = require('express');
+
+const app = express();
+
 const mongoose = require('mongoose');
+
+const errorsHandler = require('./middlewares/errorsHandler');
+
+const { userValidate, loginValidate } = require('./middlewares/validate');
+
+const { login, createUser } = require('./controllers/users');
 
 const routes = require('./routes/index');
 
 const { ERROR_NOT_FOUND } = require('./utils/errors');
 
 const { PORT = 3000 } = process.env;
-
-const app = express();
 
 mongoose.connect('mongodb://127.0.0.1/mestodb', {
   useNewUrlParser: true,
@@ -16,13 +25,8 @@ mongoose.connect('mongodb://127.0.0.1/mestodb', {
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '649fd19763c7785b48b683cb',
-  };
-
-  next();
-});
+app.post('/signin', loginValidate, login);
+app.post('/signup', userValidate, createUser);
 
 app.use(routes);
 
@@ -31,5 +35,7 @@ app.use((req, res) => {
     message: 'Задан неверный эндпойнт',
   });
 });
+
+app.use(errorsHandler);
 
 app.listen(PORT);
