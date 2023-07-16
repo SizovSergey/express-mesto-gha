@@ -5,6 +5,7 @@ const JWT_SECRET = require('../helpers/jwt');
 const BadRequestError = require('../errors/badRequestError');
 const NotFoundError = require('../errors/notFoundError');
 const ConflictError = require('../errors/conflictError');
+const UnauthorizedError = require('../errors/unauthorizedError');
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -110,13 +111,12 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  const userId = req.user._id;
   return User.findUserByCredentials(email, password)
     .then((user) => {
       if (!user || !password) {
-        next(new BadRequestError('Неверный email или пароль.'));
+        next(new UnauthorizedError('Неверный email или пароль.'));
       }
-      const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
       res
         .cookie('token', token, {
           httpOnly: true,
