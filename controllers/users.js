@@ -13,7 +13,7 @@ module.exports.createUser = (req, res, next) => {
 
   User.findOne({ email }).then((user) => {
     if (user) {
-      next(new ConflictError(`Пользователь с ${email} уже существует.`));
+      next(new ConflictError('Пользователь с таким email уже существует.'));
     }
   });
 
