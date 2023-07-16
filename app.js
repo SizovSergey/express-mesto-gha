@@ -6,9 +6,9 @@ const app = express();
 
 const mongoose = require('mongoose');
 
-const routes = require('./routes/index');
-
 const { errors } = require('celebrate');
+
+const routes = require('./routes/index');
 
 const errorsHandler = require('./middlewares/errorsHandler');
 
