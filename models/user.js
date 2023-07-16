@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 30,
     required: false,
-    default: 'Жак ив Кусто',
+    default: 'Жак-Ив Кусто',
   },
   about: {
     type: String,
