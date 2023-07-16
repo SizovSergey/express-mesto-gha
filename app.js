@@ -8,6 +8,8 @@ const mongoose = require('mongoose');
 
 const routes = require('./routes/index');
 
+const { errors } = require('celebrate');
+
 const errorsHandler = require('./middlewares/errorsHandler');
 
 const { ERROR_NOT_FOUND } = require('./utils/errors');
@@ -28,6 +30,8 @@ app.use((req, res) => {
     message: 'Задан неверный эндпойнт',
   });
 });
+
+app.use(errors());
 
 app.use(errorsHandler);
 
