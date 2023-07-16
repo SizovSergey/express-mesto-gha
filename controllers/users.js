@@ -123,7 +123,7 @@ module.exports.login = (req, res, next) => {
           maxAge: 3600000 * 24 * 7,
         })
         .status(200)
-        .send(token);
+        .send({ token });
     })
     .catch((err) => next(err));
 };
