@@ -12,7 +12,7 @@ const routes = require('./routes/index');
 
 const errorsHandler = require('./middlewares/errorsHandler');
 
-const { ERROR_NOT_FOUND } = require('./utils/errors');
+const NotFoundError = require('./errors/notFoundError');
 
 const { PORT = 3000 } = process.env;
 
@@ -25,10 +25,8 @@ app.use(express.json());
 
 app.use(routes);
 
-app.use((req, res) => {
-  res.status(ERROR_NOT_FOUND).send({
-    message: 'Задан неверный эндпойнт',
-  });
+app.use(() => {
+  throw new NotFoundError('неверный эндпойнт');
 });
 
 app.use(errors());

@@ -9,6 +9,9 @@ https://github.com/SizovSergey/express-mesto-gha.git
 Mongodb
 node
 express
+joi,celebrate
+jwt
+bcrypt
 
 ## Директории
 

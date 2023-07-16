@@ -1,3 +1,4 @@
+// пришлось убрать env из gitignore,потому что тесты так не проходились
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
