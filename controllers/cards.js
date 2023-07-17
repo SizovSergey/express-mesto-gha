@@ -11,7 +11,7 @@ module.exports.createCard = (req, res, next) => {
     name, link, owner: req.user._id,
   })
     .then((card) => {
-      res.status(200).send(card);
+      res.status(201).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -39,9 +39,9 @@ module.exports.deleteCard = (req, res, next) => {
       } else if (card.owner.toString() !== userId.toString()) {
         throw new ForbiddenError('Нельзя удалять карточки с местами других пользователей');
       } else {
-        Card.findByIdAndDelete(id)
-          .then((cardData) => {
-            res.send({ data: cardData });
+        Card.deleteOne(card)
+          .then((deletedCard) => {
+            res.send(deletedCard);
           })
           .catch(next);
       }

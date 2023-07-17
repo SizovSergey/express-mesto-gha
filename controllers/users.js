@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
-const { JWT_SECRET } = process.env;
 const BadRequestError = require('../errors/badRequestError');
 const NotFoundError = require('../errors/notFoundError');
 const ConflictError = require('../errors/conflictError');
@@ -13,12 +12,6 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-
-  User.findOne({ email }).then((user) => {
-    if (user) {
-      next(new ConflictError('Пользователь с таким email уже существует.'));
-    }
-  });
 
   return bcrypt.hash(password, 10)
     .then((hash) => User.create({
@@ -40,8 +33,11 @@ module.exports.createUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Данные заполнены неверно'));
+      } else if (err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует.'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -118,7 +114,7 @@ module.exports.login = (req, res, next) => {
       if (!email || !password) {
         next(new UnauthorizedError('Неверный email или пароль.'));
       }
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, 'supersecretkeysizovsergey', { expiresIn: '7d' });
       res
         .cookie('token', token, {
           httpOnly: true,

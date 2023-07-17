@@ -1,5 +1,7 @@
 const { celebrate, Joi } = require('celebrate');
 
+const urlRegex = /^(https?:\/\/)(www\.)?([a-z0-9._]+)\.([a-z]{2,6}\.?)(\/[\w.]*)*\/?#?$/i;
+
 const validateId = celebrate({
   params: Joi.object().keys({
     _id: Joi.string().length(24).hex(),
@@ -9,7 +11,7 @@ const validateId = celebrate({
 const cardValidate = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().pattern(/^(https?:\/\/)(www\.)?([a-z0-9._]+)\.([a-z]{2,6}\.?)(\/[\w.]*)*\/?#?$/i),
+    link: Joi.string().required().pattern(urlRegex),
   }),
 });
 
@@ -17,7 +19,7 @@ const userValidate = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/^(https?:\/\/)(www\.)?([a-z0-9._]+)\.([a-z]{2,6}\.?)(\/[\w.]*)*\/?#?$/i).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+    avatar: Joi.string().pattern(urlRegex).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8).max(30),
   }),
@@ -32,7 +34,7 @@ const loginValidate = celebrate({
 
 const avatarValidate = celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().pattern(/^(https?:\/\/)(www\.)?([a-z0-9._]+)\.([a-z]{2,6}\.?)(\/[\w.]*)*\/?#?$/i),
+    avatar: Joi.string().required().pattern(urlRegex),
   }),
 });
 

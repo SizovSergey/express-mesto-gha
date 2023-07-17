@@ -1,6 +1,8 @@
-require('dotenv').config();
-
 const express = require('express');
+
+const helmet = require('helmet');
+
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 
@@ -12,22 +14,27 @@ const routes = require('./routes/index');
 
 const errorsHandler = require('./middlewares/errorsHandler');
 
-const NotFoundError = require('./errors/notFoundError');
+const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
-const { PORT = 3000 } = process.env;
-
-mongoose.connect('mongodb://127.0.0.1/mestodb', {
+mongoose.connect(DB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use(express.json());
 
-app.use(routes);
+app.use(helmet());
 
-app.use(() => {
-  throw new NotFoundError('неверный эндпойнт');
-});
+app.use('/api', apiLimiter);
+
+app.use(routes);
 
 app.use(errors());
 
